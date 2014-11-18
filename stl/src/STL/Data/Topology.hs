@@ -11,6 +11,7 @@ module STL.Data.Topology (
   Solid,
   createSolid,
   createPoint,
+  addFace,
   )
        where
 
