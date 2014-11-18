@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module STL.Data.Topology (
   -- Space 
   Space,
@@ -15,6 +16,7 @@ module STL.Data.Topology (
 
 import Prelude hiding (lookup)
 import Data.Map.Strict hiding (foldr)
+import Control.Monad.State
 
 -- | A space represents a container of points and triangles with 
 -- a tolerance
@@ -112,8 +114,25 @@ createSolid spc = Solid spc empty []
 createPoint :: Solid a -> a -> a -> a -> Point a
 createPoint s = Point (baseSpace s)
 
--- insertFace :: Point a -> Point a -> Point a -> Solid a
--- insertFace p q r s =
---   let points  = [p, q, r]
---       indices = foldr (\pt mp -> 
+-- | Add point to the solid 
+addPoint :: (MonadState (Solid a) m, Ord a, Num a) => Point a -> m Int
+addPoint p = do 
+         solid <- get 
+         let pnts = points solid
+             (index, newpoints) = insertPoint p pnts
+         put $ solid { points = newpoints }
+         return index
+
+-- | Add a face to a solid
+addFace :: (MonadState (Solid a) m, Ord a, Num a) 
+        => Point a -> Point a -> Point a -> Vector a -> m (Solid a)
+addFace p1 p2 p3 n = do 
+        i1 <- addPoint p1
+        i2 <- addPoint p2
+        i3 <- addPoint p3
+        solid <- get
+        let f = Face { firstV = i1, secondV = i2, thirdV = i3, normal = n }
+            newfaces = f : faces solid 
+        put $ solid { faces = newfaces }
+        get
 
