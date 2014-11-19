@@ -27,5 +27,17 @@ spaceP = takeWhile1 isSpace
 
 untillSpace = takeTill isSpace
 
-solidP = skipSpace *> solidKW *> 
-  
+defaultSpace = createSpace 0.001
+
+defaultSolid = createSolid defaultSpace
+
+solidP = skipSpace *> solidKW
+
+solidNameP = do
+  skipSpace
+  many1 letter
+  takeTill isEndOfLine
+
+solidWithNameP = solidP *> (solidNameP <|> (takeTill isEndOfLine) ) *> pure defaultSolid
+
+

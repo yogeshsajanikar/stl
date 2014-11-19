@@ -105,7 +105,8 @@ data Face a = Face { firstV  :: Int
                    } deriving Show                              
 
 -- | Solid contains set of points and faces. 
-data Solid a = Solid { baseSpace :: Space a, points :: PointMap a, faces :: [ Face a ] }                  
+data Solid a = Solid { baseSpace :: Space a, points :: PointMap a, faces :: [ Face a ] }
+             deriving Show
 
 -- | Create a solid for given space
 createSolid :: Space a -> Solid a
