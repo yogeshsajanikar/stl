@@ -35,9 +35,10 @@ solidP = skipSpace *> solidKW
 
 solidNameP = do
   skipSpace
-  many1 letter
+  many' letter
   takeTill isEndOfLine
+  endOfLine
 
-solidWithNameP = solidP *> (solidNameP <|> (takeTill isEndOfLine) ) *> pure defaultSolid
+solidWithNameP = solidP *> solidNameP *> pure defaultSolid
 
 
