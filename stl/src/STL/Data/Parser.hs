@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module STL.Data.Parser
     (
     ) where
@@ -7,6 +8,9 @@ import Data.Text as T
 import STL.Data.Topology
 import Control.Applicative
 import Data.Char
+
+
+defaultSolid = createSolid $ createSpace 0.001
 
 -- | STL follows a very simple format.
 -- solid name 
@@ -19,26 +23,16 @@ import Data.Char
 -- end face
 -- endsolid
 
-solidKW = string $ T.pack "solid"
-
-endSolidKW = string $ T.pack "endsolid"
-
-spaceP = takeWhile1 isSpace
-
-untillSpace = takeTill isSpace
-
-defaultSpace = createSpace 0.001
-
-defaultSolid = createSolid defaultSpace
-
-solidP = skipSpace *> solidKW
-
-solidNameP = do
-  skipSpace
-  many' letter
-  takeTill isEndOfLine
-  endOfLine
-
-solidWithNameP = solidP *> solidNameP *> pure defaultSolid
+beginSolid = string "solid"   *>
+             blankOrSolidName *>
+             pure defaultSolid
+  where
+    solidName = skipSpace    *>
+                many1 letter *>
+                return ()
+                
+    blankOrSolidName = skipSpace <|> solidName
 
 
+beginFacet = string "facet" *> skipSpace *>
+             string "normal"
