@@ -96,4 +96,4 @@ parseSTL tolerance path = withFile path ReadMode (\handle -> do
          case parse (stl tolerance) contents of 
               Done _ r             -> return r
               Partial _            -> error "Failed with partial results"
-              Fail i context err -> error (T.unpack (T.take 50 i)))
+              Fail i context err   -> error (T.unpack (T.take 50 i)))
