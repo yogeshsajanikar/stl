@@ -9,6 +9,7 @@ module STL.Data.Topology (
   ---
   Point,
   Solid,
+  getSpace,
   createSolid,
   createPoint,
   addFace,
@@ -35,8 +36,8 @@ data Point a = Point (Space a) a a a
 data Vector a = Vector a a a deriving Show
 
 -- | Normal
-createVector :: a -> a -> a -> Vector a
-createVector = Vector 
+createVector :: Space a -> a -> a -> a -> Vector a
+createVector _ = Vector 
 
 -- | Check whether two scalars are within tolerance
 isEqual :: (Ord a, Num a) => a -> a -> a -> Bool
@@ -53,16 +54,10 @@ compareScalar t p q
   where
     cmp = isEqual t
 
-fromOrdering :: Ordering -> Maybe Ordering
-fromOrdering EQ = Nothing
-fromOrdering t  = Just t
+order :: Ordering -> Ordering -> Ordering
+order EQ second = second
+order first _   = first
 
-compareScalar' t p q  = fromOrdering $ compareScalar t p q
-
-toOrdering :: Maybe Ordering -> Ordering
-toOrdering Nothing   = EQ
-toOrdering (Just x)  = x
- 
 
 -- | Two points are equal if their coordinates are within the given tolerance
 instance (Num a, Ord a) => Eq (Point a) where
@@ -80,11 +75,8 @@ instance (Num a, Ord a) => Ord (Point a) where
 
   (Point (Space t1) x1 y1 z1) `compare` (Point (Space t2) x2 y2 z2) =
      let minTol = min t1 t2
-         cmp = compareScalar' minTol
-     in toOrdering $ do
-                      x1 `cmp` x2
-                      y1 `cmp` y2
-                      z1 `cmp` z2
+         cmp = compareScalar minTol
+     in (x1 `cmp` x2) `order` (y1 `cmp` y2) `order` (z1 `cmp` z2)
 
 -- | Map of point, and its index. Ideally we should be using R*Tree for better indexing. 
 type PointMap a = Map (Point a) Int
@@ -112,6 +104,10 @@ data Solid a = Solid { baseSpace :: Space a, points :: PointMap a, faces :: [ Fa
 createSolid :: Space a -> Solid a
 createSolid spc = Solid spc empty []
 
+-- | Get the underlying space for the solid
+getSpace :: Solid a -> Space a
+getSpace = baseSpace
+
 -- | Create a point in the given space
 createPoint :: Solid a -> a -> a -> a -> Point a
 createPoint s = Point (baseSpace s)
@@ -126,9 +122,9 @@ addPoint p = do
          return index
 
 -- | Add a face to a solid
-addFace :: (MonadState (Solid a) m, Ord a, Num a) 
+addFace' :: (MonadState (Solid a) m, Ord a, Num a) 
         => Point a -> Point a -> Point a -> Vector a -> m (Solid a)
-addFace p1 p2 p3 n = do 
+addFace' p1 p2 p3 n = do 
         i1 <- addPoint p1
         i2 <- addPoint p2
         i3 <- addPoint p3
@@ -137,4 +133,6 @@ addFace p1 p2 p3 n = do
             newfaces = f : faces solid 
         put $ solid { faces = newfaces }
         get
+
+addFace solid p1 p2 p3 n = execState (addFace' p1 p2 p3 n) solid
 
