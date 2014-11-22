@@ -16,8 +16,8 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     STL.Data.Parser
-                     , STL.Data.Topology
+  exposed-modules:     Data.STL.Parser
+                     , Data.STL.Topology
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base <= 4.8
@@ -28,7 +28,8 @@ library
                      , aeson >= 0.8.0.2
   hs-source-dirs:      src
   default-language:    Haskell2010
-
+  ghc-options:         -O2 -threaded
+  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1"
 
 executable stl-harness 
   main-is: Main.hs
@@ -36,3 +37,4 @@ executable stl-harness
   build-depends:       base <= 4.8
                      , stl >= 0.1
   default-language:    Haskell2010
+  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1"

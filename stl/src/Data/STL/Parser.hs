@@ -1,12 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
-module STL.Data.Parser
+module Data.STL.Parser
     (
+      parseSTL
     ) where
 
-import Data.Attoparsec.Text
-import qualified Data.Text as T
-import Data.Text.IO
-import STL.Data.Topology
+import Data.Attoparsec.Text.Lazy
+import qualified Data.Text.Lazy as T
+import Data.Text.Lazy.IO
+import Data.STL.Topology
 import Control.Applicative
 import Data.Char
 import System.IO (withFile, IOMode(..))
@@ -90,10 +91,12 @@ stl tolerance = do
     solid' <- facets solid
     return solid'
 
+-- | Parse STL with given tolerance and path
+parseSTL :: (Ord a, Num a, Fractional a) => a -> FilePath -> IO (Either String (Solid a))
+parseSTL tolerance path = let processSTL handle = do
+                                contents <- hGetContents handle
+                                case parse (stl tolerance) contents of 
+                                 Done _ r             -> return $ Right r
+                                 Fail i context err   -> return $ Left $ "ERROR parsing STL file. " ++ err
 
-parseSTL tolerance path = withFile path ReadMode (\handle -> do
-         contents <- hGetContents handle
-         case parse (stl tolerance) contents of 
-              Done _ r             -> return r
-              Partial _            -> error "Failed with partial results"
-              Fail i context err   -> error (T.unpack (T.take 50 i)))
+                          in withFile path ReadMode processSTL

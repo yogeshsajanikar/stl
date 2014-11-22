@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-module STL.Data.Topology (
+module Data.STL.Topology (
   -- Space 
   Space,
   createSpace,
@@ -13,6 +13,9 @@ module STL.Data.Topology (
   createSolid,
   createPoint,
   addFace,
+  --
+  numPoints,
+  numFacets
   )
        where
 
@@ -134,5 +137,20 @@ addFace' p1 p2 p3 n = do
         put $ solid { faces = newfaces }
         get
 
+-- | Add a face to the solid 
+addFace :: (Ord a, Num a) =>
+           Solid a ->
+           Point a -> Point a -> Point a ->
+           Vector a ->
+           Solid a
 addFace solid p1 p2 p3 n = execState (addFace' p1 p2 p3 n) solid
+
+-- Statistical data about the solid
+
+numPoints :: Solid a -> Int
+numPoints = size . points
+
+numFacets :: Solid a -> Int
+numFacets = length . faces
+
 
