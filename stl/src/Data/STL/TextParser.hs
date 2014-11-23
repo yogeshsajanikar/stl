@@ -45,6 +45,9 @@ triad :: Parser (a, a, a) -> (a -> a -> a -> b) -> Parser b
 triad p f =
   (\(x, y, z) -> f x y z) <$> p
 
+vertexPoint :: Fractional a => Solid a -> Parser (Point a)
+vertexPoint s = triad (coordinates "vertex") (createPoint s)
+  
 beginFacet :: Fractional a => Parser (a, a, a)
 beginFacet = do
   skipSpace
@@ -53,3 +56,14 @@ beginFacet = do
 
 facetContent :: Fractional a => Parser [(a, a, a)]
 facetContent = Al.count 3 $ coordinates "vertex"
+
+endFacet :: Parser ()
+endFacet = skipSpace *> string "endfacet" *> pure ()
+
+facet s = do
+  n  <- triad beginFacet (createVec s)
+  v1 <- vertexPoint s
+  return (n, v1)
+  
+  
+

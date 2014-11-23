@@ -12,6 +12,7 @@ module Data.STL.Topology (
   getSpace,
   createSolid,
   createPoint,
+  createVec,
   addFace,
   --
   numPoints,
@@ -114,6 +115,9 @@ getSpace = baseSpace
 -- | Create a point in the given space
 createPoint :: Solid a -> a -> a -> a -> Point a
 createPoint s = Point (baseSpace s)
+
+createVec :: Solid a -> a -> a -> a -> Vector a
+createVec s = createVector (baseSpace s)
 
 -- | Add point to the solid 
 addPoint :: (MonadState (Solid a) m, Ord a, Num a) => Point a -> m Int
