@@ -3,7 +3,7 @@ module Data.STL.TextParser where
 
 
 import Control.Applicative
-import Data.Attoparsec.Text.Lazy
+import Data.Attoparsec.Text.Lazy as Al
 import Data.Text
 import Data.STL.Topology
 
@@ -30,8 +30,10 @@ beginSolid tolerance =
   where
     space = createSpace tolerance
 
+coordinate :: (Fractional a) => Parser a
 coordinate = skipWhile isHorizontalSpace *> rational
 
+coordinates :: Fractional a => Text -> Parser (a, a, a)
 coordinates s = do
   string s
   x <- coordinate
@@ -39,4 +41,15 @@ coordinates s = do
   z <- coordinate
   return $ (x, y, z)
 
+triad :: Parser (a, a, a) -> (a -> a -> a -> b) -> Parser b
+triad p f =
+  (\(x, y, z) -> f x y z) <$> p
 
+beginFacet :: Fractional a => Parser (a, a, a)
+beginFacet = do
+  skipSpace
+  string "facet"
+  coordinates "normal"
+
+facetContent :: Fractional a => Parser [(a, a, a)]
+facetContent = Al.count 3 $ coordinates "vertex"
