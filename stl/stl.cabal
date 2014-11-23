@@ -18,7 +18,8 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Data.STL.Parser
                      , Data.STL.Topology
-  -- other-modules:       
+
+  other-modules:       Data.STL.TextParser
   -- other-extensions:    
   build-depends:       base <= 4.8
                      , attoparsec >= 0.12.1.2
@@ -29,7 +30,7 @@ library
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -O2 -threaded
-  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1"
+  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1" -prof -auto-all
 
 executable stl-harness 
   main-is: Main.hs

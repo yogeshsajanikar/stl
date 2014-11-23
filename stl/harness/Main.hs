@@ -10,7 +10,8 @@ main = do
   (path:_) <- getArgs
   putStrLn $ "Parsing STL file: " ++ path
   putStrLn $ "Default tolerance " ++ (show tolerance)
-  s <- parseSTL tolerance path
+  s <- parseSTL2 tolerance path
+  putStrLn "Parsing complete"
   case s of
    Left error -> putStrLn error
    Right s    -> do

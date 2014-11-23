@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, BangPatterns #-}
 module Data.STL.Topology (
   -- Space 
   Space,
@@ -86,7 +86,7 @@ type PointMap a = Map (Point a) Int
 
 -- | insert point into the map
 insertPoint :: (Ord a, Num a) => Point a -> PointMap a -> (Int, PointMap a)
-insertPoint p pmap = case lookup p pmap of
+insertPoint !p !pmap = case lookup p pmap of
                       Just i   -> (i, pmap)
                       Nothing  -> (j, insert p j pmap)
   where
@@ -100,7 +100,7 @@ data Face a = Face { firstV  :: Int
                    } deriving Show                              
 
 -- | Solid contains set of points and faces. 
-data Solid a = Solid { baseSpace :: Space a, points :: PointMap a, faces :: [ Face a ] }
+data Solid a = Solid { baseSpace :: Space a, points :: PointMap a, faces :: ![ Face a ] }
              deriving Show
 
 -- | Create a solid for given space
@@ -117,7 +117,7 @@ createPoint s = Point (baseSpace s)
 
 -- | Add point to the solid 
 addPoint :: (MonadState (Solid a) m, Ord a, Num a) => Point a -> m Int
-addPoint p = do 
+addPoint !p = do 
          solid <- get 
          let pnts = points solid
              (index, newpoints) = insertPoint p pnts
@@ -127,7 +127,8 @@ addPoint p = do
 -- | Add a face to a solid
 addFace' :: (MonadState (Solid a) m, Ord a, Num a) 
         => Point a -> Point a -> Point a -> Vector a -> m (Solid a)
-addFace' p1 p2 p3 n = do 
+addFace' p1 p2 p3 n =
+  do 
         i1 <- addPoint p1
         i2 <- addPoint p2
         i3 <- addPoint p3
