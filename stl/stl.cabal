@@ -18,8 +18,8 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Data.STL.Parser
                      , Data.STL.Topology
-
-  other-modules:       Data.STL.TextParser
+                     , Data.STL.TextParser
+  -- other-modules:       
   -- other-extensions:    
   build-depends:       base <= 4.8
                      , attoparsec >= 0.12.1.2
