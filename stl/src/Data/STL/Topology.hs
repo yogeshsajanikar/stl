@@ -130,8 +130,8 @@ addPoint !p = do
 
 -- | Add a face to a solid
 addFace' :: (MonadState (Solid a) m, Ord a, Num a) 
-        => Point a -> Point a -> Point a -> Vector a -> m (Solid a)
-addFace' p1 p2 p3 n =
+        => Vector a -> Point a -> Point a -> Point a -> m (Solid a)
+addFace' n p1 p2 p3 =
   do 
         i1 <- addPoint p1
         i2 <- addPoint p2
@@ -145,10 +145,10 @@ addFace' p1 p2 p3 n =
 -- | Add a face to the solid 
 addFace :: (Ord a, Num a) =>
            Solid a ->
-           Point a -> Point a -> Point a ->
            Vector a ->
+           Point a -> Point a -> Point a ->
            Solid a
-addFace solid p1 p2 p3 n = execState (addFace' p1 p2 p3 n) solid
+addFace solid n p1 p2 p3 = execState (addFace' n p1 p2 p3) solid
 
 -- Statistical data about the solid
 

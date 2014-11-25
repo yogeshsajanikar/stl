@@ -1,6 +1,6 @@
 module Main where
 
-import Data.STL.TextParser
+import Data.STL.Parser
 import Data.STL.Topology
 import System.Environment
 
