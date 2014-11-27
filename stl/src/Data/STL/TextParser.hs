@@ -1,5 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 module Data.STL.TextParser where
 
 
@@ -13,6 +14,7 @@ import qualified Data.Text.Lazy.IO as TIO
 import Data.STL.Topology
 import Control.Monad
 import System.IO
+import Control.DeepSeq
 
 -- |
 skipLine :: Parser ()
@@ -41,14 +43,15 @@ coordinate :: (Fractional a) => Parser a
 coordinate = (skipWhile isHorizontalSpace) *> rational
 {-# INLINE coordinate #-}
 
-coordinates :: Fractional a => Text -> (a -> a -> a -> b) -> Parser b 
-coordinates s f =  f  <$> (skipSpace <* string s *> coordinate)
+coordinates :: (Fractional a) => Text -> (a -> a -> a -> b) -> Parser b 
+coordinates s f =  g  <$> (skipSpace <* string s *> coordinate)
                       <*> coordinate
                       <*> coordinate
                       <?> "Parsing triad of coordinates"
-{-# INLINE coordinates #-}                      
+  where
+    g !x !y !z = f x y z
 
-vertexPoint :: Fractional a => Solid a -> Parser (Point a)
+vertexPoint :: (Fractional a) => Solid a -> Parser (Point a)
 vertexPoint s = coordinates "vertex" (createPoint s)
 
 beginFacet :: Fractional a => Solid a -> Parser (Vector a)

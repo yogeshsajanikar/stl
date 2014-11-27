@@ -31,7 +31,7 @@ library
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -O2 -threaded
-  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1 -K256k -xc" -prof -auto-all
+  ghc-prof-options:    "-with-rtsopts=-p -s -hy -xc" -prof -auto-all -fprof-auto
 
 executable stl-harness 
   main-is: Main.hs
@@ -40,4 +40,4 @@ executable stl-harness
                      , stl >= 0.1
   default-language:    Haskell2010
   ghc-options:         -O2 -threaded
-  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1 -K256k -xc"
+  ghc-prof-options:    "-with-rtsopts=-p -s -hy -xc" -prof -auto-all -fprof-auto

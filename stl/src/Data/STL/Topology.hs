@@ -23,6 +23,7 @@ module Data.STL.Topology (
 import Prelude hiding (lookup)
 import Data.Map.Strict
 import Control.Monad.State
+import Control.DeepSeq
 
 -- | A space represents a container of points and triangles with 
 -- a tolerance
@@ -36,8 +37,12 @@ createSpace = Space
 data Point a = Point (Space a) !a !a !a 
      deriving Show
 
+instance NFData (Point a)
+
 -- | Vector for a given class
 data Vector a = Vector !a !a !a deriving Show
+
+instance NFData (Vector a)
 
 -- | Normal
 createVector :: Space a -> a -> a -> a -> Vector a
@@ -89,7 +94,7 @@ type PointMap a = Map (Point a) Int
 
 -- | insert point into the map
 insertPoint :: (Ord a, Num a) => Point a -> PointMap a -> (Int, PointMap a)
-insertPoint !p !pmap = pmap `seq` index (insertLookupWithKey combine p j pmap)
+insertPoint !p !pmap = p `seq` pmap `seq` index (insertLookupWithKey combine p j pmap)
   where
     j = size pmap + 1
     combine _ _ old = old
@@ -117,7 +122,7 @@ getSpace = baseSpace
 
 -- | Create a point in the given space
 createPoint :: Solid a -> a -> a -> a -> Point a
-createPoint s = Point (baseSpace s)
+createPoint s !x !y !z = Point (baseSpace s) x y z
 
 createVec :: Solid a -> a -> a -> a -> Vector a
 createVec s = createVector (baseSpace s)
@@ -127,9 +132,10 @@ addPoint :: (MonadState (Solid a) m, Ord a, Num a) => Point a -> m Int
 addPoint !p = do 
          solid <- get 
          let pnts = points solid
-             (index, newpoints) = insertPoint p pnts
+             (index, newpoints) = pnts `seq` insertPoint p pnts
          put $ newpoints `seq` solid { points = newpoints }
          return index
+
 
 -- | Add a face to a solid
 addFace' :: (MonadState (Solid a) m, Ord a, Num a) 
