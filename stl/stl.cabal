@@ -27,10 +27,11 @@ library
                      , mtl >= 2.2.1
                      , text >= 1.2.0.0
                      , aeson >= 0.8.0.2
+                     , deepseq >= 1.3
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -O2 -threaded
-  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1" -prof -auto-all
+  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1 -K256k -xc" -prof -auto-all
 
 executable stl-harness 
   main-is: Main.hs
@@ -38,4 +39,5 @@ executable stl-harness
   build-depends:       base <= 4.8
                      , stl >= 0.1
   default-language:    Haskell2010
-  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1"
+  ghc-options:         -O2 -threaded
+  ghc-prof-options:    "-with-rtsopts=-p -s -h -i0.1 -K256k -xc"

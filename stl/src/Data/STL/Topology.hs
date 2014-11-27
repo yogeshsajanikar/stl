@@ -21,23 +21,23 @@ module Data.STL.Topology (
        where
 
 import Prelude hiding (lookup)
-import Data.Map.Strict hiding (foldr)
+import Data.Map.Strict
 import Control.Monad.State
 
 -- | A space represents a container of points and triangles with 
 -- a tolerance
-data Space a = Space a deriving (Show)
+data Space a = Space !a deriving (Show)
 
 -- | Create space with a given tolerance
 createSpace :: a -> Space a 
 createSpace = Space
 
 -- | Point represents a vertex of the triangle
-data Point a = Point (Space a) a a a 
+data Point a = Point (Space a) !a !a !a 
      deriving Show
 
 -- | Vector for a given class
-data Vector a = Vector a a a deriving Show
+data Vector a = Vector !a !a !a deriving Show
 
 -- | Normal
 createVector :: Space a -> a -> a -> a -> Vector a
@@ -48,6 +48,7 @@ isEqual :: (Ord a, Num a) => a -> a -> a -> Bool
 isEqual t p q = delta < t && (-delta) < t
   where
     delta = p - q
+{-# INLINE isEqual #-}
 
 -- | Compare two scalars, using \isEqual
 compareScalar :: (Ord a, Num a) => a -> a -> a -> Ordering
@@ -57,11 +58,12 @@ compareScalar t p q
   | otherwise = GT
   where
     cmp = isEqual t
+{-# INLINE compareScalar #-}
 
 order :: Ordering -> Ordering -> Ordering
 order EQ second = second
 order first _   = first
-
+{-# INLINE order #-}
 
 -- | Two points are equal if their coordinates are within the given tolerance
 instance (Num a, Ord a) => Eq (Point a) where
@@ -87,16 +89,17 @@ type PointMap a = Map (Point a) Int
 
 -- | insert point into the map
 insertPoint :: (Ord a, Num a) => Point a -> PointMap a -> (Int, PointMap a)
-insertPoint !p !pmap = case lookup p pmap of
-                      Just i   -> (i, pmap)
-                      Nothing  -> (j, insert p j pmap)
+insertPoint !p !pmap = pmap `seq` index (insertLookupWithKey combine p j pmap)
   where
     j = size pmap + 1
+    combine _ _ old = old
+    index (Just i', pmap') = (i', pmap')
+    index (Nothing, pmap') = (j,  pmap')
 
 -- | A face contains three vertices and a normal. The face stores a index of the point.
-data Face a = Face { firstV  :: Int
-                   , secondV :: Int
-                   , thirdV  :: Int
+data Face a = Face { firstV  :: !Int
+                   , secondV :: !Int
+                   , thirdV  :: !Int
                    , normal  :: Vector a
                    } deriving Show                              
 
@@ -125,7 +128,7 @@ addPoint !p = do
          solid <- get 
          let pnts = points solid
              (index, newpoints) = insertPoint p pnts
-         put $ solid { points = newpoints }
+         put $ newpoints `seq` solid { points = newpoints }
          return index
 
 -- | Add a face to a solid

@@ -4,5 +4,5 @@ module Data.STL.Parser
     parseSolid
     ) where
 
-import Data.STL.TextParser
+import Data.STL.TextParser(parseSolid)
 
