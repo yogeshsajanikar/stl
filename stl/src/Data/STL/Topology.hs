@@ -27,7 +27,7 @@ import Control.DeepSeq
 
 -- | A space represents a container of points and triangles with 
 -- a tolerance
-data Space a = Space !a deriving (Show)
+data Space a = Space a deriving (Show)
 
 -- | Create space with a given tolerance
 createSpace :: a -> Space a 
@@ -46,13 +46,12 @@ instance NFData (Vector a)
 
 -- | Normal
 createVector :: Space a -> a -> a -> a -> Vector a
-createVector _ = Vector 
+createVector _ =  Vector 
 
 -- | Check whether two scalars are within tolerance
 isEqual :: (Ord a, Num a) => a -> a -> a -> Bool
-isEqual t p q = delta < t && (-delta) < t
-  where
-    delta = p - q
+isEqual t p q = let delta = p - q
+                in delta < t && (-delta) < t
 {-# INLINE isEqual #-}
 
 -- | Compare two scalars, using \isEqual
@@ -65,6 +64,7 @@ compareScalar t p q
     cmp = isEqual t
 {-# INLINE compareScalar #-}
 
+-- | Order created by two successive comparisons
 order :: Ordering -> Ordering -> Ordering
 order EQ second = second
 order first _   = first
@@ -94,7 +94,7 @@ type PointMap a = Map (Point a) Int
 
 -- | insert point into the map
 insertPoint :: (Ord a, Num a) => Point a -> PointMap a -> (Int, PointMap a)
-insertPoint !p !pmap = index (insertLookupWithKey  combine p j $! pmap)
+insertPoint !p !pmap = index (insertLookupWithKey combine p j pmap)
   where
     j = size pmap + 1
     combine _ _ old = old
@@ -122,7 +122,7 @@ getSpace = baseSpace
 
 -- | Create a point in the given space
 createPoint :: Solid a -> a -> a -> a -> Point a
-createPoint s !x !y !z = Point (baseSpace s) x y z
+createPoint !s !x !y !z = Point (baseSpace s) x y z
 
 createVec :: Solid a -> a -> a -> a -> Vector a
 createVec s = createVector (baseSpace s)

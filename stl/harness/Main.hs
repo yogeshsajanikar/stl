@@ -1,8 +1,9 @@
 module Main where
 
-import Data.STL.Parser
+import Data.STL.TextParser
 import Data.STL.Topology
 import System.Environment
+import Control.Monad
 
 main :: IO Int
 main = do
@@ -10,13 +11,13 @@ main = do
   (path:_) <- getArgs
   putStrLn $ "Parsing STL file: " ++ path
   putStrLn $ "Default tolerance " ++ show tolerance
-  s <- parseSolid tolerance path
+  s <- readTextSTLRaw tolerance path
   putStrLn "Parsing complete"
   case s of
    Left error -> putStrLn error
    Right s    -> do
-     putStrLn $ "Num points : " ++ show (numPoints s)
-     putStrLn $ "Num facets : " ++ show (numFacets s)
+     forM_ s (putStrLn . show)
+     putStrLn $ "Num facets : " ++ show (length s)
   return 0
 
 

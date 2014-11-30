@@ -1,8 +1,11 @@
-{-# LANGUAGE OverloadedStrings, BangPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Data.STL.Parser
     (
-    parseSolid
+    readSTL
     ) where
 
-import Data.STL.TextParser(parseSolid)
+import Data.STL.TextParser
+import Data.STL.Topology
 
+readSTL :: (Fractional a, Ord a) => a -> FilePath -> IO (Either String (Solid a))
+readSTL = readTextSTL
