@@ -94,7 +94,7 @@ type PointMap a = Map (Point a) Int
 
 -- | insert point into the map
 insertPoint :: (Ord a, Num a) => Point a -> PointMap a -> (Int, PointMap a)
-insertPoint !p !pmap = p `seq` pmap `seq` index (insertLookupWithKey combine p j pmap)
+insertPoint !p !pmap = index (insertLookupWithKey  combine p j $! pmap)
   where
     j = size pmap + 1
     combine _ _ old = old
@@ -140,15 +140,15 @@ addPoint !p = do
 -- | Add a face to a solid
 addFace' :: (MonadState (Solid a) m, Ord a, Num a) 
         => Vector a -> Point a -> Point a -> Point a -> m (Solid a)
-addFace' n p1 p2 p3 =
+addFace' !n !p1 !p2 !p3 =
   do 
-        i1 <- addPoint p1
-        i2 <- addPoint p2
-        i3 <- addPoint p3
+        !i1 <- addPoint p1
+        !i2 <- addPoint p2
+        !i3 <- addPoint p3
         solid <- get
         let f = Face { firstV = i1, secondV = i2, thirdV = i3, normal = n }
             newfaces = f : faces solid 
-        put $ solid { faces = newfaces }
+        put $! solid { faces = newfaces }
         get
 
 -- | Add a face to the solid 
