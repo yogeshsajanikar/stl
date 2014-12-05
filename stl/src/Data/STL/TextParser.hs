@@ -1,22 +1,23 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE BangPatterns #-}
-module Data.STL.TextParser (readTextSTL, readTextSTLRaw)  where
+module Data.STL.TextParser where
 
 
 import Control.Applicative
-import Data.Attoparsec.Text
-import Data.Text as T
-import qualified Data.Text.Lazy as Tl
+import Data.Attoparsec.ByteString.Char8
+import Data.ByteString.Char8 as T
+import qualified Data.ByteString.Lazy as Tl
 import qualified Data.List  as L
-import qualified Data.Attoparsec.Text.Lazy as Al
-import qualified Data.Text.Lazy.IO as TIO
+import qualified Data.Attoparsec.ByteString.Lazy as Al
+--import qualified Data.ByteString.Lazy.IO as TIO
 import Data.STL.Topology
 import Control.Monad
 import Data.Char(isAlphaNum)
+import qualified Data.ByteString.Internal as BS (c2w, w2c)
 
 -- | Parse coordinate tripliet. 
-coordinates :: (Fractional a) => Text -> (a -> a -> a -> b) -> Parser b
+coordinates :: (Fractional a) => ByteString -> (a -> a -> a -> b) -> Parser b
 coordinates s f = do
   skipSpace
   string s
@@ -25,8 +26,9 @@ coordinates s f = do
   !z <- coordinate
   return $! f x y z
   where
-    coordinate = skipWhile isHorizontalSpace *> fmap realToFrac double
+    coordinate = skipWhile (isHorizontalSpace . BS.c2w) *> fmap realToFrac double
 
+-- | RawFacet contains a normal and three points
 type RawFacet a = (Vector a, Point a, Point a, Point a)
 
 -- | Parse a facet. The facet comprises of a normal, and three vertices
@@ -54,7 +56,7 @@ solid :: (Ord a, Fractional a) => a -> Parser (Solid a)
 solid t = beginSolid *> facets solid <* endSolid
       where
             solid      = createSolid $ createSpace t
-            solidName  = option "default" (skipWhile isHorizontalSpace *> fmap T.pack (many1 $ satisfy isAlphaNum) )
+            solidName  = option "default" (skipWhile (isHorizontalSpace . BS.c2w) *> fmap T.pack (many1 $ satisfy isAlphaNum) )
             endSolid   = skipSpace <* "endsolid"
             beginSolid = skipSpace <* "solid" *> solidName
 
@@ -62,22 +64,30 @@ rawFacets :: Fractional a => a -> Parser [RawFacet a]
 rawFacets tolerance = beginSolid *> many' (facet solid) <* endSolid
       where
             solid      = createSolid $ createSpace tolerance
-            solidName  = option "default" (skipWhile isHorizontalSpace *> fmap T.pack (many1 $ satisfy isAlphaNum) )
+            solidName  = option "default" (skipWhile (isHorizontalSpace . BS.c2w) *> fmap T.pack (many1 $ satisfy isAlphaNum) )
             endSolid   = skipSpace <* "endsolid" <?> "end solid"
             beginSolid = skipSpace <* "solid" *> solidName <?> "start solid"
 
 eitherResultForce :: Al.Result r -> Either String r
 eitherResultForce (Al.Done _ r) = Right $! r
-eitherResultForce (Al.Fail i' ctx msg) = Left $ L.concat ctx ++ " : " ++ msg ++ "(remaining inp : " ++ Tl.unpack i'
+eitherResultForce (Al.Fail i' ctx msg) = Left $ L.concat ctx ++ " : " ++ msg -- ++ "(remaining inp : " ++ i'
 
 -- | Just reads an STL file and return a list of tuple (n,v1,v2,v3) 
 -- where n is normal, and v1,v2,v3 are vertices of a facet
 readTextSTLRaw :: Fractional a => a -> FilePath -> IO (Either String [RawFacet a])
 readTextSTLRaw tolerance path = do
-  i <- TIO.readFile path
+  i <- Tl.readFile path
   let r = eitherResultForce $! Al.parse (rawFacets tolerance) i
   return $! r
 
 -- | Read text STL file. STL extensions for color etc. are not supported in this version. 
 readTextSTL :: (Fractional a, Ord a) => a -> FilePath -> IO (Either String (Solid a))
-readTextSTL tolerance path = liftM (Al.eitherResult . Al.parse (solid tolerance)) (TIO.readFile path)
+readTextSTL tolerance path = liftM (Al.eitherResult . Al.parse (solid tolerance)) (Tl.readFile path)
+
+maybeFacet :: Fractional a => Solid a -> Parser (Maybe (RawFacet a)) 
+maybeFacet s = option Nothing (Just `fmap` (facet s))
+
+
+solidNameI  = option "default" (skipWhile (isHorizontalSpace . BS.c2w) *> fmap T.pack (many1 $ satisfy isAlphaNum) )
+endSolidI   = skipSpace <* "endsolid" <?> "end solid"
+beginSolidI = skipSpace <* "solid" *> solidNameI <?> "start solid"
