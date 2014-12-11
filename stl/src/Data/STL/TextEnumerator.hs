@@ -29,3 +29,26 @@ iterateSTL = do
 readSTL :: FilePath -> IO [RawFacet Float]
 readSTL path = run_ (ET.enumFile path $$ iterateSTL)
         
+facetsi :: (Monad m, Fractional a) => Solid a -> Iteratee ByteString m (Maybe (RawFacet a))
+facetsi s = do
+  f <- faceti
+  case f of 
+    Nothing -> return f
+    Just f' -> do
+              return f 
+              facetsi s
+    where
+      faceti = iterParser $ maybeFacet s
+               
+solidi :: (Monad m, Fractional a) => a -> Iteratee ByteString m (Maybe (RawFacet a))
+solidi t = do
+  solidi 
+  f <- facetsi solid 
+  endsolidi
+  return f
+         where solidi = iterParser beginSolidI
+               endsolidi = iterParser endSolidI
+               solid = createSolid $ createSpace t
+solide :: (Monad m, Fractional a) => a -> Enumeratee ByteString (Maybe (RawFacet a)) m b
+solide t (Continue _) = undefined
+solide _ step         = return step

@@ -1,5 +1,6 @@
 module Data.STL.BinaryParser where
 
+import Data.Attoparsec.ByteString
 import Data.Attoparsec.ByteString.Char8
 import qualified Data.Text as T
 import Data.Text.IO

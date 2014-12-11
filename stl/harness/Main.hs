@@ -14,16 +14,16 @@ main = do
   putStrLn $ "Parsing STL file: " ++ path
   putStrLn $ "Default tolerance " ++ show tolerance
 
-  fs <- readSTL path
-  putStrLn $ "Num facets : " ++ show (length fs)
+  -- fs <- readSTL path
+  -- putStrLn $ "Num facets : " ++ show (length fs)
 
-  -- s <- readTextSTLRaw tolerance path
-  -- putStrLn "Parsing complete"
-  -- case s of
-  --  Left error -> putStrLn error
-  --  Right s    -> do
-  --    forM_ s (putStrLn . show)
-  --    putStrLn $ "Num facets : " ++ show (length s)
+  s <- readTextSTLRaw tolerance path
+  putStrLn "Parsing complete"
+  case s of
+   Left error -> putStrLn error
+   Right s    -> do
+     forM_ s (putStrLn . show)
+     putStrLn $ "Num facets : " ++ show (length s)
   return 0
 
 
