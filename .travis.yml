@@ -1,5 +1,7 @@
 language: haskell
 ghc: 7.8
+before_install:
+  - "cd stl"
 notifications:
   email: false
   
