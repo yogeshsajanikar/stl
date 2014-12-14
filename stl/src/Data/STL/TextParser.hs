@@ -1,6 +1,8 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE BangPatterns #-}
+{- | 
+-}
 module Data.STL.TextParser where
 
 
@@ -10,7 +12,6 @@ import Data.ByteString.Char8 as T
 import qualified Data.ByteString.Lazy as Tl
 import qualified Data.List  as L
 import qualified Data.Attoparsec.ByteString.Lazy as Al
---import qualified Data.ByteString.Lazy.IO as TIO
 import Data.STL.Topology
 import Control.Monad
 import Data.Char(isAlphaNum)
@@ -27,9 +28,6 @@ coordinates s f = do
   return $! f x y z
   where
     coordinate = skipWhile (isHorizontalSpace . BS.c2w) *> fmap realToFrac double
-
--- | RawFacet contains a normal and three points
-type RawFacet a = (Vector a, Point a, Point a, Point a)
 
 -- | Parse a facet. The facet comprises of a normal, and three vertices
 facet  :: Fractional a => Solid a -> Parser (RawFacet a)

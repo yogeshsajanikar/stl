@@ -1,20 +1,32 @@
 {-# LANGUAGE FlexibleContexts, BangPatterns #-}
+{-|
+  Module: Topology
+
+  This module supports functionality to create primitives for STL
+  model. The most basic primitives are @Point@, and @Vector@. The 
+  primitives are created in a base space @Space@. The space is 
+  characterized by a tolerance. The tolerance is used to check 
+  coincidence for points and vectors.
+-}
 module Data.STL.Topology (
-  -- Space 
+  -- * Primitive Types
   Space,
-  createSpace,
-  ---
   Vector,
-  createVector,
-  ---
   Point,
   Solid,
-  getSpace,
-  createSolid,
-  createPoint,
+  RawFacet,
+  Face,
+  -- * Primitive Creation 
+  createSpace,
+  createVector,
   createVec,
+  createPoint,
+  createSolid,
+
+  -- ** Facet Creation
   addFace,
-  --
+             
+  -- * Statistical data about the solid
   numPoints,
   numFacets
   )
@@ -26,25 +38,30 @@ import Control.Monad.State
 import Control.DeepSeq
 
 -- | A space represents a container of points and triangles with 
--- a tolerance
+-- a given tolerance
 data Space a = Space a deriving (Show)
 
 -- | Create space with a given tolerance
-createSpace :: a -> Space a 
+createSpace :: Fractional a => a -> Space a 
 createSpace = Space
 
--- | Point represents a vertex of the triangle
+-- | Point represents a 3D point in space. 
 data Point a = Point (Space a) !a !a !a 
      deriving Show
 
 instance NFData (Point a)
 
--- | Vector for a given class
+-- | A 3D vector. (Note: The vector does not keep a reference to the space, as
+-- it represents a free vector).
 data Vector a = Vector !a !a !a deriving Show
 
 instance NFData (Vector a)
 
--- | Normal
+
+-- | RawFacet contains a normal and three points
+type RawFacet a = (Vector a, Point a, Point a, Point a)
+
+-- | Create a vector in a given space
 createVector :: Space a -> a -> a -> a -> Vector a
 createVector _ =  Vector 
 
@@ -137,7 +154,6 @@ addPoint !p = do
          return index
 
 
--- | Add a face to a solid
 addFace' :: (MonadState (Solid a) m, Ord a, Num a) 
         => Vector a -> Point a -> Point a -> Point a -> m (Solid a)
 addFace' !n !p1 !p2 !p3 =
@@ -151,7 +167,15 @@ addFace' !n !p1 !p2 !p3 =
         put $! solid { faces = newfaces }
         get
 
--- | Add a face to the solid 
+-- | Add a face to a solid. For STL the facet is a triangle, and a vector. The
+-- vector represents the normal to the triangle, and may be used to denote the
+-- orientation of the triangle. However, the normal can be found by using vertices
+-- of triangles.
+--
+-- Some applications use the normal (which can point to a direction other than
+-- the triangles' normal) for rendering.
+--
+-- Here the normal information is not processed in this version.
 addFace :: (Ord a, Num a) =>
            Solid a ->
            Vector a ->
@@ -159,12 +183,13 @@ addFace :: (Ord a, Num a) =>
            Solid a
 addFace solid n p1 p2 p3 = execState (addFace' n p1 p2 p3) solid
 
--- Statistical data about the solid
-
+-- | Number of points in a solid
 numPoints :: Solid a -> Int
 numPoints = size . points
 
+-- | Number of faces in the solid
 numFacets :: Solid a -> Int
 numFacets = length . faces
 
+            
 
