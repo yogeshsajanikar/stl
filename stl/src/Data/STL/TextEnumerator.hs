@@ -9,15 +9,16 @@ import qualified Data.Enumerator.List as EL
 import Data.ByteString
 import Data.STL.Topology
 import Control.Monad.Trans
+import Data.Maybe
 
 -- | Stream STL file as an iteratee of @RawFacet@. It uses the parser for raw facets.
 -- Supplied iteratee is fed facet stream. The user can supply own enumerator stream to
 -- feed to the streamer.
 streamSTL :: (Monad m, Fractional a) =>
              a
-          -> Iteratee (Maybe (RawFacet a)) m b
+          -> Iteratee (RawFacet a) m b
           -> Iteratee ByteString m b
-streamSTL t it = iterParser beginSolidI >> (sequenceFacet solid =$= justIsolate =$ it)
+streamSTL t it = iterParser beginSolidI >> (sequenceFacet solid =$= justIsolate =$= EL.map fromJust =$ it)
     where
       solid         = createSolid $ createSpace t
       sequenceFacet = E.sequence . iterParser . maybeFacet
