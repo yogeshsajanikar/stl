@@ -3,11 +3,14 @@ module Data.STL.TextEnumerator where
 
 import Data.STL.TextParser 
 import Data.Attoparsec.Enumerator
-import Data.Enumerator
+import Data.Enumerator as E
 import qualified Data.Enumerator.Binary as ET
+import qualified Data.Enumerator.List as EL
 import Data.ByteString
 import Data.STL.Topology
+import Control.Monad.Trans
 
+    
 facetsI :: (Monad m, Fractional a) => Solid a -> [RawFacet a] -> Iteratee ByteString m [RawFacet a]
 facetsI s fs = do 
         !f <- iterParser (maybeFacet s)
@@ -28,27 +31,20 @@ iterateSTL = do
 
 readSTL :: FilePath -> IO [RawFacet Float]
 readSTL path = run_ (ET.enumFile path $$ iterateSTL)
-        
-facetsi :: (Monad m, Fractional a) => Solid a -> Iteratee ByteString m (Maybe (RawFacet a))
-facetsi s = do
-  f <- faceti
-  case f of 
-    Nothing -> return f
-    Just f' -> do
-              return f 
-              facetsi s
-    where
-      faceti = iterParser $ maybeFacet s
-               
-solidi :: (Monad m, Fractional a) => a -> Iteratee ByteString m (Maybe (RawFacet a))
-solidi t = do
-  solidi 
-  f <- facetsi solid 
-  endsolidi
-  return f
-         where solidi = iterParser beginSolidI
-               endsolidi = iterParser endSolidI
-               solid = createSolid $ createSpace t
-solide :: (Monad m, Fractional a) => a -> Enumeratee ByteString (Maybe (RawFacet a)) m b
-solide t (Continue _) = undefined
-solide _ step         = return step
+
+justIsolate :: Monad m => Enumeratee (Maybe a) (Maybe a) m b
+justIsolate = EL.isolateWhile check
+    where check (Just _) = True
+          check _        = False
+
+
+
+sequenceFacet :: (Fractional a, Monad m) => Solid a
+              -> Enumeratee ByteString (Maybe (RawFacet a)) m b
+sequenceFacet = E.sequence . iterParser . maybeFacet
+
+readSTL' :: (Fractional a, Monad m) => a
+         -> FilePath
+         -> Iteratee ByteString m (RawFacet a)
+readSTL' t path = run_ $ undefined
+

@@ -85,7 +85,7 @@ readTextSTL :: (Fractional a, Ord a) => a -> FilePath -> IO (Either String (Soli
 readTextSTL tolerance path = liftM (Al.eitherResult . Al.parse (solid tolerance)) (Tl.readFile path)
 
 maybeFacet :: Fractional a => Solid a -> Parser (Maybe (RawFacet a)) 
-maybeFacet s = option Nothing (Just `fmap` (facet s))
+maybeFacet s = option Nothing (Just `fmap` facet s)
 
 
 solidNameI  = option "default" (skipWhile (isHorizontalSpace . BS.c2w) *> fmap T.pack (many1 $ satisfy isAlphaNum) )

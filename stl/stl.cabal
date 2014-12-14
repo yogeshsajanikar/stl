@@ -3,13 +3,13 @@
 
 name:                stl
 version:             0.1.0.0
--- synopsis:            
--- description:         
+synopsis:            STL parser and streaming 
+description:         A very lightweight library for parsing and streaming STL data. 
 license:             MIT
 license-file:        LICENSE
 author:              Yogesh Sajanikar
 maintainer:          yogesh.sajanikar@yahoo.com
--- copyright:           
+copyright:           Yogesh Sajanikar
 category:            Data
 build-type:          Simple
 -- extra-source-files:  
@@ -29,12 +29,11 @@ library
                      , bytestring >= 0.10
                      , mtl >= 2.2.1
                      , text >= 1.2.0.0
-                     , aeson >= 0.8.0.2
                      , deepseq >= 1.3
                      , attoparsec-enumerator >= 0.3
   hs-source-dirs:      src
   default-language:    Haskell2010
-  ghc-options:         -O2 -threaded
+--  ghc-options:
   ghc-prof-options:    -prof -auto-all -fprof-auto -O
 
 executable stl-harness 
@@ -43,5 +42,5 @@ executable stl-harness
   build-depends:       base <= 4.8
                      , stl >= 0.1
   default-language:    Haskell2010
-  ghc-options:         -O2 -threaded
+  ghc-options:         -threaded
   ghc-prof-options:    -prof -auto-all -fprof-auto -O
