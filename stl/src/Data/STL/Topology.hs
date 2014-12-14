@@ -58,7 +58,8 @@ data Vector a = Vector !a !a !a deriving Show
 instance NFData (Vector a)
 
 
--- | RawFacet contains a normal and three points
+-- | RawFacet contains a normal and three points. RawFacets are currently
+-- streamed through STL module APIs.
 type RawFacet a = (Vector a, Point a, Point a, Point a)
 
 -- | Create a vector in a given space
@@ -118,14 +119,19 @@ insertPoint !p !pmap = index (insertLookupWithKey combine p j pmap)
     index (Just i', pmap') = (i', pmap')
     index (Nothing, pmap') = (j,  pmap')
 
--- | A face contains three vertices and a normal. The face stores a index of the point.
+-- | A face contains three vertices and a normal. The face stores indices
+-- to point. 
 data Face a = Face { firstV  :: !Int
                    , secondV :: !Int
                    , thirdV  :: !Int
                    , normal  :: Vector a
                    } deriving Show                              
 
--- | Solid contains set of points and faces. 
+-- | Solid contains set of points and faces. The solid stores a map
+-- of points against its index.
+--
+-- Note: A point map, in its current avatar, is not efficient implementation. Ideally
+-- we should be using spatial tree, which would be soon included in near future.
 data Solid a = Solid { baseSpace :: Space a, points :: PointMap a, faces :: ![ Face a ] }
              deriving Show
 

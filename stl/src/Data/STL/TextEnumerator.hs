@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Data.STL.TextEnumerator where
 
 import Data.STL.TextParser 
@@ -10,41 +10,16 @@ import Data.ByteString
 import Data.STL.Topology
 import Control.Monad.Trans
 
-    
-facetsI :: (Monad m, Fractional a) => Solid a -> [RawFacet a] -> Iteratee ByteString m [RawFacet a]
-facetsI s fs = do 
-        !f <- iterParser (maybeFacet s)
-        case f of
-             Nothing -> return fs
-             Just f' -> facetsI s (f':fs)
-
-
-iterateSTL :: Monad m => Iteratee ByteString m [RawFacet Float]
-iterateSTL = do
-           iterParser beginSolidI 
-           fs <- facetsI solid []
-           iterParser endSolidI
-           return fs
-      where
-            solid = createSolid $ createSpace (0.001 :: Float)
-
-
-readSTL :: FilePath -> IO [RawFacet Float]
-readSTL path = run_ (ET.enumFile path $$ iterateSTL)
-
-justIsolate :: Monad m => Enumeratee (Maybe a) (Maybe a) m b
-justIsolate = EL.isolateWhile check
-    where check (Just _) = True
-          check _        = False
-
-
-
-sequenceFacet :: (Fractional a, Monad m) => Solid a
-              -> Enumeratee ByteString (Maybe (RawFacet a)) m b
-sequenceFacet = E.sequence . iterParser . maybeFacet
-
-readSTL' :: (Fractional a, Monad m) => a
-         -> FilePath
-         -> Iteratee ByteString m (RawFacet a)
-readSTL' t path = run_ $ undefined
+-- | Stream STL file as an iteratee of @RawFacet@. It uses the parser for raw facets.
+-- Supplied iteratee is fed facet stream. The user can supply own enumerator stream to
+-- feed to the streamer.
+streamSTL :: (Monad m, Fractional a) =>
+             a
+          -> Iteratee (Maybe (RawFacet a)) m b
+          -> Iteratee ByteString m b
+streamSTL t it = iterParser beginSolidI >> (sequenceFacet solid =$= justIsolate =$ it)
+    where
+      solid         = createSolid $ createSpace t
+      sequenceFacet = E.sequence . iterParser . maybeFacet
+      justIsolate   = EL.isolateWhile (\m -> case m of { Just _ -> True; Nothing -> False } )
 

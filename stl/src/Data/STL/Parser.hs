@@ -11,15 +11,35 @@
 
    The STL file can be represnted either using a text format or using a binary 
    format. The binary format is used to represent large data. 
+
+   The text format has following structure:
+
+   >  solid <solid name - optional>
+   >  facet <normal>
+   >    outer loop
+   >       point x1 y1 z1
+   >       point x2 y2 z2
+   >       point x3 y3 z3
+   >    endloop
+   >    ...
+   >  endsolid
 -}
 
 module Data.STL.Parser
     (
-    readSTL
+     -- * STL Reader
+     readSTL,
+     streamSTL
     ) where
 
-import Data.STL.TextParser
-import Data.STL.Topology
 
-readSTL :: (Fractional a, Ord a) => a -> FilePath -> IO (Either String (Solid a))
-readSTL = readTextSTL
+    import Data.STL.TextParser
+    import Data.STL.Topology
+    import Data.STL.TextEnumerator (streamSTL)
+
+    -- | Read STL file, and returs a solid. The solid contains an indexed set of points, and
+    -- a list of faces. This function can be slow, as compared to the stream based STL
+    readSTL :: (Fractional a, Ord a) => a -> FilePath -> IO (Either String (Solid a))
+    readSTL = readTextSTL
+
+

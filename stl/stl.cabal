@@ -41,6 +41,7 @@ executable stl-harness
   hs-source-dirs: harness
   build-depends:       base <= 4.8
                      , stl >= 0.1
+                     , enumerator >= 0.4
   default-language:    Haskell2010
   ghc-options:         -threaded
   ghc-prof-options:    -prof -auto-all -fprof-auto -O
