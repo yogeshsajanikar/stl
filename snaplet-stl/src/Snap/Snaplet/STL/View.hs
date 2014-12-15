@@ -20,4 +20,4 @@ stlAppInit = makeSnaplet "stlview" "STL Viewing Snaplet" Nothing $ do
                addRoutes [ ("/", writeText "Load/View STL files")
                          , ("/load", writeText "Load STL files") 
                          ]
-               return $ STLApp 
+               return STLApp 
