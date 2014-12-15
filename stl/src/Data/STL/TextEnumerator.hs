@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Data.STL.TextEnumerator where
 
-import Data.STL.TextParser 
+import Data.STL.TextParser
 import Data.Attoparsec.Enumerator
 import Data.Enumerator as E
 import qualified Data.Enumerator.Binary as ET

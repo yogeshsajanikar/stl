@@ -1,7 +1,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE BangPatterns #-}
-{- | 
+{- |
 -}
 module Data.STL.TextParser where
 
@@ -17,7 +17,7 @@ import Control.Monad
 import Data.Char(isAlphaNum)
 import qualified Data.ByteString.Internal as BS (c2w, w2c)
 
--- | Parse coordinate tripliet. 
+-- | Parse coordinate tripliet.
 coordinates :: (Fractional a) => ByteString -> (a -> a -> a -> b) -> Parser b
 coordinates s f = do
   skipSpace
@@ -41,9 +41,9 @@ facet s = RawFacet <$> beginFacet s
     beginFacet s  = skipSpace <* string "facet" *> coordinates "normal" (createVec s)
     endFacet      = const () <$> (skipSpace <* string "endfacet")
     vertexPoint s = coordinates "vertex" (createPoint s)
-    
 
--- | Parse all the facets 
+
+-- | Parse all the facets
 facets :: (Ord a, Fractional a) => Solid a -> Parser (Solid a)
 facets s = L.foldl' merge s <$> many' (facet s) <?> "facets"
   where
@@ -70,7 +70,7 @@ eitherResultForce :: Al.Result r -> Either String r
 eitherResultForce (Al.Done _ r) = Right $! r
 eitherResultForce (Al.Fail i' ctx msg) = Left $ L.concat ctx ++ " : " ++ msg -- ++ "(remaining inp : " ++ i'
 
--- | Just reads an STL file and return a list of tuple (n,v1,v2,v3) 
+-- | Just reads an STL file and return a list of tuple (n,v1,v2,v3)
 -- where n is normal, and v1,v2,v3 are vertices of a facet
 readTextSTLRaw :: Fractional a => a -> FilePath -> IO (Either String [RawFacet a])
 readTextSTLRaw tolerance path = do
@@ -78,11 +78,11 @@ readTextSTLRaw tolerance path = do
   let r = eitherResultForce $! Al.parse (rawFacets tolerance) i
   return $! r
 
--- | Read text STL file. STL extensions for color etc. are not supported in this version. 
+-- | Read text STL file. STL extensions for color etc. are not supported in this version.
 readTextSTL :: (Fractional a, Ord a) => a -> FilePath -> IO (Either String (Solid a))
 readTextSTL tolerance path = liftM (Al.eitherResult . Al.parse (solid tolerance)) (Tl.readFile path)
 
-maybeFacet :: Fractional a => Solid a -> Parser (Maybe (RawFacet a)) 
+maybeFacet :: Fractional a => Solid a -> Parser (Maybe (RawFacet a))
 maybeFacet s = option Nothing (Just `fmap` facet s)
 
 

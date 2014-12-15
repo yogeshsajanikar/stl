@@ -3,9 +3,9 @@
   Module: Topology
 
   This module supports functionality to create primitives for STL
-  model. The most basic primitives are @Point@, and @Vector@. The 
-  primitives are created in a base space @Space@. The space is 
-  characterized by a tolerance. The tolerance is used to check 
+  model. The most basic primitives are @Point@, and @Vector@. The
+  primitives are created in a base space @Space@. The space is
+  characterized by a tolerance. The tolerance is used to check
   coincidence for points and vectors.
 -}
 module Data.STL.Topology (
@@ -16,7 +16,7 @@ module Data.STL.Topology (
   Solid,
   RawFacet(..),
   Face,
-  -- * Primitive Creation 
+  -- * Primitive Creation
   createSpace,
   createVector,
   createVec,
@@ -25,7 +25,7 @@ module Data.STL.Topology (
 
   -- ** Facet Creation
   addFace,
-             
+
   -- * Statistical data about the solid
   numPoints,
   numFacets
@@ -37,16 +37,16 @@ import Data.Map.Strict
 import Control.Monad.State
 import Control.DeepSeq
 
--- | A space represents a container of points and triangles with 
+-- | A space represents a container of points and triangles with
 -- a given tolerance
 data Space a = Space a deriving (Show)
 
 -- | Create space with a given tolerance
-createSpace :: Fractional a => a -> Space a 
+createSpace :: Fractional a => a -> Space a
 createSpace = Space
 
--- | Point represents a 3D point in space. 
-data Point a = Point (Space a) !a !a !a 
+-- | Point represents a 3D point in space.
+data Point a = Point (Space a) !a !a !a
      deriving Show
 
 instance NFData (Point a)
@@ -65,7 +65,7 @@ data RawFacet a = RawFacet (Vector a) (Point a) (Point a) (Point a)
 
 -- | Create a vector in a given space
 createVector :: Space a -> a -> a -> a -> Vector a
-createVector _ =  Vector 
+createVector _ =  Vector
 
 -- | Check whether two scalars are within tolerance
 isEqual :: (Ord a, Num a) => a -> a -> a -> Bool
@@ -99,7 +99,7 @@ instance (Num a, Ord a) => Eq (Point a) where
       yEq = isEqual' y1 y2
       zEq = isEqual' z1 z2
 
--- | Compare two points, starting with first coordinate, checking for 
+-- | Compare two points, starting with first coordinate, checking for
 -- equality and then comparing the numerical value.
 instance (Num a, Ord a) => Ord (Point a) where
 
@@ -108,7 +108,7 @@ instance (Num a, Ord a) => Ord (Point a) where
          cmp = compareScalar minTol
      in (x1 `cmp` x2) `order` (y1 `cmp` y2) `order` (z1 `cmp` z2)
 
--- | Map of point, and its index. Ideally we should be using R*Tree for better indexing. 
+-- | Map of point, and its index. Ideally we should be using R*Tree for better indexing.
 type PointMap a = Map (Point a) Int
 
 -- | insert point into the map
@@ -121,12 +121,12 @@ insertPoint !p !pmap = index (insertLookupWithKey combine p j pmap)
     index (Nothing, pmap') = (j,  pmap')
 
 -- | A face contains three vertices and a normal. The face stores indices
--- to point. 
+-- to point.
 data Face a = Face { firstV  :: !Int
                    , secondV :: !Int
                    , thirdV  :: !Int
                    , normal  :: Vector a
-                   } deriving Show                              
+                   } deriving Show
 
 -- | Solid contains set of points and faces. The solid stores a map
 -- of points against its index.
@@ -151,26 +151,26 @@ createPoint !s !x !y !z = Point (baseSpace s) x y z
 createVec :: Solid a -> a -> a -> a -> Vector a
 createVec s = createVector (baseSpace s)
 
--- | Add point to the solid 
+-- | Add point to the solid
 addPoint :: (MonadState (Solid a) m, Ord a, Num a) => Point a -> m Int
-addPoint !p = do 
-         solid <- get 
+addPoint !p = do
+         solid <- get
          let pnts = points solid
              (index, newpoints) = pnts `seq` insertPoint p pnts
          put $ newpoints `seq` solid { points = newpoints }
          return index
 
 
-addFace' :: (MonadState (Solid a) m, Ord a, Num a) 
+addFace' :: (MonadState (Solid a) m, Ord a, Num a)
         => Vector a -> Point a -> Point a -> Point a -> m (Solid a)
 addFace' !n !p1 !p2 !p3 =
-  do 
+  do
         !i1 <- addPoint p1
         !i2 <- addPoint p2
         !i3 <- addPoint p3
         solid <- get
         let f = Face { firstV = i1, secondV = i2, thirdV = i3, normal = n }
-            newfaces = f : faces solid 
+            newfaces = f : faces solid
         put $! solid { faces = newfaces }
         get
 
@@ -198,5 +198,5 @@ numPoints = size . points
 numFacets :: Solid a -> Int
 numFacets = length . faces
 
-            
+
 
