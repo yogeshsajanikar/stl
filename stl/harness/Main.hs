@@ -17,6 +17,7 @@ main = do
   putStrLn $ "Default tolerance " ++ show tolerance
 
   run_ $ EB.enumFile path $$ streamSTL tolerance (E.printChunks False)
+  -- putStrLn $ "Num facets : " ++ show (Prelude.length fs)
   -- s <- readSTL tolerance path
   -- putStrLn "Parsing complete"
   -- case s of

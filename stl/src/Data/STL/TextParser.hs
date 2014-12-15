@@ -31,7 +31,7 @@ coordinates s f = do
 
 -- | Parse a facet. The facet comprises of a normal, and three vertices
 facet  :: Fractional a => Solid a -> Parser (RawFacet a)
-facet s = (,,,) <$> beginFacet s
+facet s = RawFacet <$> beginFacet s
           <*> (skipSpace     <* string "outer loop" *> vertexPoint s)
           <*> vertexPoint s
           <*> vertexPoint s
@@ -47,7 +47,7 @@ facet s = (,,,) <$> beginFacet s
 facets :: (Ord a, Fractional a) => Solid a -> Parser (Solid a)
 facets s = L.foldl' merge s <$> many' (facet s) <?> "facets"
   where
-    merge solid (!n,!p1,!p2,!p3) = addFace solid n p1 p2 p3
+    merge solid  (RawFacet !n !p1 !p2 !p3) = addFace solid n p1 p2 p3
 
 -- | Parse STL solid. Solid name is not used
 solid :: (Ord a, Fractional a) => a -> Parser (Solid a)

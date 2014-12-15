@@ -14,7 +14,7 @@ module Data.STL.Topology (
   Vector,
   Point,
   Solid,
-  RawFacet,
+  RawFacet(..),
   Face,
   -- * Primitive Creation 
   createSpace,
@@ -60,7 +60,8 @@ instance NFData (Vector a)
 
 -- | RawFacet contains a normal and three points. RawFacets are currently
 -- streamed through STL module APIs.
-type RawFacet a = (Vector a, Point a, Point a, Point a)
+data RawFacet a = RawFacet (Vector a) (Point a) (Point a) (Point a)
+                  deriving Show
 
 -- | Create a vector in a given space
 createVector :: Space a -> a -> a -> a -> Vector a
