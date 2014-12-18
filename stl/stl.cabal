@@ -18,9 +18,9 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Data.STL.Parser
                      , Data.STL.Topology
+                     , Data.STL.TextEnumerator
   other-modules:       
                        Data.STL.TextParser
-                     , Data.STL.TextEnumerator
   -- other-extensions:    
   build-depends:       base < 5 && > 3
                      , attoparsec > 0.10
