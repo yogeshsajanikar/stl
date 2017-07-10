@@ -6,6 +6,7 @@ module Snap.Snaplet.STL.View where
 import           Control.Lens.TH
 import           Data.Int
 import           Snap
+import           Snap.Types
 import           Snap.Snaplet.Heist
 import           Snap.Util.FileUploads
 import           Data.STL.Topology
@@ -13,6 +14,8 @@ import           Data.STL.Parser
 import           Data.Enumerator as E
 import qualified Data.Enumerator.List as EL
 import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString as BS
+import           Data.Text as T
 
 data STLApp = STLApp { _heist :: Snaplet (Heist STLApp)
                      }
@@ -33,13 +36,17 @@ stlDefaultPolicy = setMaximumFormInputSize (maxMb * megaByte) defaultUploadPolic
 stlPartPolicy :: PartInfo -> PartUploadPolicy
 stlPartPolicy _ = allowWithMaximumSize (maxMb * megaByte)
 
+--stlUploadDump :: MonadSnap m => m ()
 stlUploadDump :: MonadSnap m => m ()
 stlUploadDump = do
-  fields <- handleMultipart stlDefaultPolicy $ \part -> do
-                  streamSTL (0.001::Float) EL.consume
-                  return $ partFieldName part
-  let url = B.concat fields
-  redirect "/load"
+  handleMultipart stlDefaultPolicy $ \part -> E.printChunks False
+                  -- streamSTL (0.001::Float) (E.printChunks False)
+                  
+                  --return $ partFieldName part
+  return ()
+  -- writeText "Hello, Loaded"
+  --redirect "/load"
+      where showText x = writeText "Hello"
 
 stlAppInit :: SnapletInit STLApp STLApp
 stlAppInit = makeSnaplet "stlview" "STL Viewing Snaplet" Nothing $ do

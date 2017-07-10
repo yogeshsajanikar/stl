@@ -36,6 +36,7 @@ import Prelude hiding (lookup)
 import Data.Map.Strict
 import Control.Monad.State
 import Control.DeepSeq
+import Data.Typeable
 
 -- | A space represents a container of points and triangles with
 -- a given tolerance
@@ -47,7 +48,7 @@ createSpace = Space
 
 -- | Point represents a 3D point in space.
 data Point a = Point (Space a) !a !a !a
-     deriving Show
+     deriving (Show, Typeable)
 
 instance NFData (Point a)
 

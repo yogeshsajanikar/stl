@@ -24,3 +24,22 @@ streamSTL t it = iterParser beginSolidI >> (sequenceFacet solid =$= justIsolate 
       sequenceFacet = E.sequence . iterParser . maybeFacet
       justIsolate   = EL.isolateWhile (\m -> case m of { Just _ -> True; Nothing -> False } )
 
+
+
+
+stlIterate :: (Monad m, Fractional a) => a -> Iteratee ByteString m [RawFacet a]
+stlIterate t = do
+  begin
+  facets []
+    where
+      solid = createSolid $ createSpace t
+      begin = iterParser beginSolidI
+      facet = iterParser $ maybeFacet solid
+      facets fs = do
+                 mf <- facet
+                 case mf of
+                   Nothing -> return fs
+                   Just f  -> facets (f:fs)
+      
+
+
