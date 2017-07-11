@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts, BangPatterns #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-|
   Module: Topology
 
@@ -37,6 +38,7 @@ import Data.Map.Strict
 import Control.Monad.State
 import Control.DeepSeq
 import Data.Typeable
+import GHC.Generics
 
 -- | A space represents a container of points and triangles with
 -- a given tolerance
@@ -48,15 +50,15 @@ createSpace = Space
 
 -- | Point represents a 3D point in space.
 data Point a = Point (Space a) !a !a !a
-     deriving (Show, Typeable)
+     deriving (Show, Typeable, Generic)
 
-instance NFData (Point a)
+instance NFData a => NFData (Point a)
 
 -- | A 3D vector. (Note: The vector does not keep a reference to the space, as
 -- it represents a free vector).
-data Vector a = Vector !a !a !a deriving Show
+data Vector a = Vector !a !a !a deriving (Show, Generic)
 
-instance NFData (Vector a)
+instance NFData a => NFData (Vector a)
 
 
 -- | RawFacet contains a normal and three points. RawFacets are currently

@@ -1,25 +1,22 @@
 module Main where
 
 import System.Environment
-import Data.STL.Topology
+--import Data.STL.Topology
 import Data.STL.Parser
-import Data.STL.TextEnumerator
+--import Data.STL.TextEnumerator
 import Control.Monad
-import Data.Enumerator as E
-import qualified Data.Enumerator.Binary as EB
-import qualified Data.Enumerator.List as EL
 
 main :: IO Int
 main = do
-  let tolerance = 0.001 :: Float
+  -- let tolerance = 0.001 :: Float
   
-  (path:_) <- getArgs
-  putStrLn $ "Parsing STL file: " ++ path
-  putStrLn $ "Default tolerance " ++ show tolerance
+  -- (path:_) <- getArgs
+  -- putStrLn $ "Parsing STL file: " ++ path
+  -- putStrLn $ "Default tolerance " ++ show tolerance
 
-  --run_ $ EB.enumFile path $$ streamSTL tolerance (E.printChunks False)
-  fs <- run_ $ EB.enumFile path $$ stlIterate tolerance
-  putStrLn $ "Num facets : " ++ show (Prelude.length fs)
+  -- --run_ $ EB.enumFile path $$ streamSTL tolerance (E.printChunks False)
+  -- fs <- run_ $ EB.enumFile path $$ stlIterate tolerance
+  -- putStrLn $ "Num facets : " ++ show (Prelude.length fs)
   -- putStrLn $ "Num facets : " ++ show (Prelude.length fs)
   -- s <- readSTL tolerance path
   -- putStrLn "Parsing complete"

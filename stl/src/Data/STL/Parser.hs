@@ -28,18 +28,35 @@
 module Data.STL.Parser
     (
      -- * STL Reader
-     readSTL,
-     streamSTL
+     readSTL
     ) where
 
 
-    import Data.STL.TextParser
-    import Data.STL.Topology
-    import Data.STL.TextEnumerator (streamSTL)
+import Data.STL.TextParser
+import System.IO
 
-    -- | Read STL file, and returs a solid. The solid contains an indexed set of points, and
-    -- a list of faces. This function can be slow, as compared to the stream based STL
-    readSTL :: (Fractional a, Ord a) => a -> FilePath -> IO (Either String (Solid a))
-    readSTL = readTextSTL
+-- | Read the file in chunks 
+readChunks :: Handle -> IO [ByteString]
+readChunks h | hIsEOF h = []
+readChunks h = hGetSome h 4096 : readChunks h
+
+-- | Feed the parser
+parseSolid :: [ByteString] -> Result (Solid a)
+parseSolid [] = Fail [] "No input"
+parseSolid (b:bs) =
+  let result = parse solid b
+  in parseSolid' bs result
+
+  where
+    parseSolid [] r = r
+    parseSolid (b:bs) r = undefined
+
+
+-- | Read STL file, and returs a solid. The solid contains an indexed set of points, and
+-- a list of faces. This function can be slow, as compared to the stream based STL
+readSTL :: Fractional a => FilePath -> IO (Either String (Solid a))
+readSTL = withFile ReadMode $ \h -> do
+  isAtEnd <- hIsEOF
+  if isAtEnd 
 
 
