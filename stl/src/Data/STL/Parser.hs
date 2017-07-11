@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, BangPatterns #-}
 {- |
    Module : Parser
 
@@ -34,11 +34,19 @@ module Data.STL.Parser
 
 import Data.STL.TextParser
 import System.IO
+import Data.ByteString
+import Data.STL.Geometry
+import Data.Attoparsec.ByteString.Char8
+import Data.ByteString
 
 -- | Read the file in chunks 
 readChunks :: Handle -> IO [ByteString]
-readChunks h | hIsEOF h = []
-readChunks h = hGetSome h 4096 : readChunks h
+readChunks h = do
+  isAtEnd <- hIsEOF h
+  if isAtEnd then
+    return []
+    else 
+    (:) <$> hGetSome h 4096 <*> readChunks h
 
 -- | Feed the parser
 parseSolid :: [ByteString] -> Result (Solid a)
@@ -49,14 +57,12 @@ parseSolid (b:bs) =
 
   where
     parseSolid [] r = r
-    parseSolid (b:bs) r = undefined
+    parseSolid (b:bs) r = parseSolid bs !(feed r b)
 
 
 -- | Read STL file, and returs a solid. The solid contains an indexed set of points, and
 -- a list of faces. This function can be slow, as compared to the stream based STL
 readSTL :: Fractional a => FilePath -> IO (Either String (Solid a))
-readSTL = withFile ReadMode $ \h -> do
-  isAtEnd <- hIsEOF
-  if isAtEnd 
+readSTL = withFile ReadMode 
 
 
